@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Long Division Master - 2-Digit Divisors</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .font-heading {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+        /* Custom Division House Grid Styling */
+        .division-bracket {
+            border-left: 4px solid #1e293b;
+            border-top: 4px solid #1e293b;
+            border-top-left-radius: 6px;
+        }
+        /* Bounce Animation for Bring Down Arrow */
+        @keyframes bounceArrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(6px); }
+        }
+        .bounce-arrow {
+            animation: bounceArrow 1.2s infinite ease-in-out;
+        }
+        /* Custom Scrollbar for Skip Counting Ladder */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800">
+    <header class="bg-indigo-600 text-white shadow-xl sticky top-0 z-50 border-b-4 border-indigo-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-400 text-slate-900 p-2.5 rounded-2xl font-heading font-extrabold text-2xl shadow-lg transform hover:scale-105 transition">
+                    <i class="fa-solid fa-square-root-variable"></i>
+                </div>
+                <div>
+                    <h1 class="font-heading text-2xl sm:text-3xl font-bold tracking-wide flex items-center gap-2">
+                        Visual Division With HAYA<span class="text-amber-300 text-xs sm:text-sm px-2.5 py-0.5 rounded-full bg-indigo-800 border border-indigo-400">2-Digit Divisors</span>
+                    </h1>
+                    <p class="text-xs sm:text-sm text-indigo-100 font-medium">See math visually. Step by step, color by color!</p>
+                </div>
+            </div>
+            <!-- Header Controls & Sound Toggle -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <button id="sound-btn" onclick="toggleSound()" class="bg-indigo-800 hover:bg-indigo-900 text-amber-300 px-3.5 py-2 rounded-xl text-sm font-bold border border-indigo-500 shadow flex items-center gap-2 transition">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i> <span id="sound-label">Sound ON</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 space-y-6">
+        <!-- Top Navigation Pills -->
+        <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex flex-wrap gap-2 justify-center sm:justify-start">
+            <button onclick="switchTab('guided')" id="tab-btn-guided" class="flex-1 sm:flex-initial px-5 py-3 rounded-xl font-heading font-bold text-base transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> 1. Guided Long Division
+            </button>
+            <button onclick="switchTab('base10')" id="tab-btn-base10" class="flex-1 sm:flex-initial px-5 py-3 rounded-xl font-heading font-bold text-base transition flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+                <i class="fa-solid fa-cubes text-indigo-500"></i> 2. Visual Base-10 Blocks
+            </button>
+            <button onclick="switchTab('practice')" id="tab-btn-practice" class="flex-1 sm:flex-initial px-5 py-3 rounded-xl font-heading font-bold text-base transition flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+                <i class="fa-solid fa-trophy text-amber-500"></i> 3. Practice Arena
+            </button>
+        </div>
+        <section id="tab-guided" class="space-y-6">
+            
+            <!-- Controls & Preset Selectors -->
+            <div class="bg-white p-5 sm:p-6 rounded-3xl shadow-xl border-2 border-indigo-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border">Pick a Problem:</span>
+                    <button onclick="loadPreset(483, 21)" class="preset-btn px-4 py-2 rounded-xl text-sm font-bold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition">483 ÷ 21</button>
+                    <button onclick="loadPreset(625, 25)" class="preset-btn px-4 py-2 rounded-xl text-sm font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 hover:bg-emerald-200 transition">625 ÷ 25</button>
+                    <button onclick="loadPreset(782, 34)" class="preset-btn px-4 py-2 rounded-xl text-sm font-bold bg-purple-100 text-purple-900 border border-purple-300 hover:bg-purple-200 transition">782 ÷ 34</button>
+                    <button onclick="loadPreset(936, 12)" class="preset-btn px-4 py-2 rounded-xl text-sm font-bold bg-cyan-100 text-cyan-900 border border-cyan-300 hover:bg-cyan-200 transition">936 ÷ 12</button>
+                </div>
+                <!-- Custom Problem Input -->
+                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                    <div class="flex items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-300">
+                        <input type="number" id="custom-dividend" value="782" min="100" max="999" class="w-20 sm:w-24 px-3 py-1.5 rounded-xl font-mono text-center font-bold text-lg bg-white border border-slate-300 focus:outline-indigo-500" placeholder="782">
+                        <span class="px-2 font-bold text-slate-500">÷</span>
+                        <input type="number" id="custom-divisor" value="34" min="10" max="99" class="w-16 sm:w-20 px-3 py-1.5 rounded-xl font-mono text-center font-bold text-lg bg-white border border-slate-300 focus:outline-indigo-500" placeholder="34">
+                    </div>
+                    <button onclick="startCustomProblem()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-heading font-bold shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-play"></i> Solve
+                    </button>
+                </div>
+            </div>
+            <!-- DMSB Strategy Legend Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div id="dmsb-d" class="p-3.5 rounded-2xl border-2 bg-white border-purple-200 flex items-center gap-3 transition">
+                    <div class="w-10 h-10 rounded-xl bg-purple-600 text-white font-heading font-extrabold text-xl flex items-center justify-center shadow">D</div>
+                    <div>
+                        <div class="font-heading font-bold text-purple-900 text-sm">1. DIVIDE</div>
+                        <div class="text-xs text-purple-700 font-medium">How many fit?</div>
+                    </div>
+                </div>
+                <div id="dmsb-m" class="p-3.5 rounded-2xl border-2 bg-white border-amber-200 flex items-center gap-3 transition">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white font-heading font-extrabold text-xl flex items-center justify-center shadow">M</div>
+                    <div>
+                        <div class="font-heading font-bold text-amber-900 text-sm">2. MULTIPLY</div>
+                        <div class="text-xs text-amber-700 font-medium">Multiply top digit</div>
+                    </div>
+                </div>
+                <div id="dmsb-s" class="p-3.5 rounded-2xl border-2 bg-white border-rose-200 flex items-center gap-3 transition">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500 text-white font-heading font-extrabold text-xl flex items-center justify-center shadow">S</div>
+                    <div>
+                        <div class="font-heading font-bold text-rose-900 text-sm">3. SUBTRACT</div>
+                        <div class="text-xs text-rose-700 font-medium">Find remainder</div>
+                    </div>
+                </div>
+                <div id="dmsb-b" class="p-3.5 rounded-2xl border-2 bg-white border-emerald-200 flex items-center gap-3 transition">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white font-heading font-extrabold text-xl flex items-center justify-center shadow">B</div>
+                    <div>
+                        <div class="font-heading font-bold text-emerald-900 text-sm">4. BRING DOWN</div>
+                        <div class="text-xs text-emerald-700 font-medium">Drop next digit</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Main Interactive Canvas Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="lg:col-span-4 bg-white p-5 rounded-3xl shadow-xl border-2 border-slate-200 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 rounded-xl bg-indigo-100 text-indigo-700 text-sm"><i class="fa-solid fa-stairs"></i></span>
+                            <h3 class="font-heading font-bold text-lg text-slate-900">Building Blocks</h3>
+                        </div>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border">Multiples Cheat Sheet</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-4">
+                        Look at this tower to easily find how many times <span class="font-bold text-indigo-600" id="ladder-divisor-display">34</span> fits without mental stress!
+                    </p>
+                    <!-- Skip Counting Cards Tower -->
+                    <div id="skip-counting-tower" class="space-y-2 overflow-y-auto max-h-[460px] pr-1 custom-scrollbar">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- Division House Display Card -->
+                    <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl border-2 border-slate-200 flex flex-col items-center justify-center min-h-[380px] relative overflow-hidden">
+                        
+                        <!-- Top House Title Badge -->
+                        <div class="absolute top-4 left-4 bg-slate-100 px-3 py-1 rounded-full text-xs font-mono font-bold text-slate-600 border">
+                            DIVIDER HOUSE CANVAS
+                        </div>
+                        <!-- Division Grid Display -->
+                        <div class="my-6">
+                            <!-- Quotient Row -->
+                            <div class="flex justify-start pl-[5.5rem] sm:pl-[6.5rem] mb-1">
+                                <div id="house-quotient" class="font-mono text-3xl sm:text-4xl font-extrabold text-indigo-600 flex">
+                                    <!-- Populated dynamically with exact character widths -->
+                                </div>
+                            </div>
+                            <!-- Division Line Structure -->
+                            <div class="flex items-start">
+                                <!-- Divisor -->
+                                <div id="house-divisor" class="font-mono text-3xl sm:text-4xl font-extrabold text-indigo-900 pr-3 pt-1">
+                                    34
+                                </div>
+                                <!-- House Roof & Right Bracket -->
+                                <div class="division-bracket pl-4 pt-2 pb-6 pr-6 bg-slate-50/50 rounded-br-2xl border-b border-dashed border-slate-200">
+                                    <!-- Dividend -->
+                                    <div id="house-dividend" class="font-mono text-3xl sm:text-4xl font-extrabold text-slate-900 flex">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                    <!-- Step-by-Step Subtraction Rows Container -->
+                                    <div id="house-steps-container" class="mt-2 space-y-2 font-mono text-2xl sm:text-3xl font-bold">
+                                        <!-- Step rows added dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Interactive Action & Visual Prompt Panel -->
+                    <div id="action-prompt-card" class="bg-indigo-900 text-white p-6 sm:p-8 rounded-3xl shadow-2xl relative border-4 border-indigo-700">
+                        <div class="flex items-start gap-4">
+                            <div id="prompt-step-icon" class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-900 font-heading font-extrabold text-2xl flex items-center justify-center shrink-0 shadow-lg">
+                                1
+                            </div>
+                            <div class="flex-grow space-y-2">
+                                <h4 id="prompt-step-title" class="font-heading font-bold text-xl sm:text-2xl text-amber-300">
+                                    Step 1: Divide Tens
+                                </h4>
+                                <p id="prompt-step-desc" class="text-indigo-100 text-sm sm:text-base leading-relaxed">
+                                    How many times does <span class="font-bold text-white bg-indigo-800 px-2 py-0.5 rounded">34</span> fit into <span class="font-bold text-amber-300 bg-indigo-800 px-2 py-0.5 rounded">78</span>? Use the Building Blocks on the left!
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Dynamic Input / Choice Area -->
+                        <div id="prompt-input-area" class="mt-6 pt-6 border-t border-indigo-800 flex flex-wrap items-center justify-between gap-4">
+                            <!-- Populated dynamically per step -->
+                        </div>
+                        <!-- Feedback Message Display -->
+                        <div id="prompt-feedback" class="mt-4 text-sm font-bold min-h-[24px]"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="tab-base10" class="hidden space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl border-2 border-slate-200 space-y-6">
+                <div>
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Pictorial Representation</span>
+                    <h2 class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">Visual Base-10 Block Sharing</h2>
+                    <p class="text-slate-600 text-sm sm:text-base mt-1">
+                        Division is simply making equal groups! Watch how hundreds, tens, and ones blocks are distributed.
+                    </p>
+                </div>
+                <!-- Block Controls -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="font-heading font-bold text-slate-700">Problem:</span>
+                        <span id="base10-problem-label" class="font-mono font-extrabold text-xl text-indigo-600">483 ÷ 21</span>
+                    </div>
+                    <button onclick="animateBase10Grouping()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-heading font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Animate Sharing Blocks
+                    </button>
+                </div>
+                <!-- Base-10 Visual Canvas -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900 p-6 rounded-3xl text-white">
+                    
+                    <!-- Hundreds Blocks Column -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 flex flex-col items-center">
+                        <span class="text-xs font-bold font-mono text-indigo-300 uppercase mb-3">Hundreds Flats (100)</span>
+                        <div id="blocks-hundreds" class="flex flex-wrap gap-3 justify-center min-h-[140px] items-center">
+                            <!-- Generated Blocks -->
+                        </div>
+                    </div>
+                    <!-- Tens Rods Column -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 flex flex-col items-center">
+                        <span class="text-xs font-bold font-mono text-amber-300 uppercase mb-3">Tens Rods (10)</span>
+                        <div id="blocks-tens" class="flex flex-wrap gap-2 justify-center min-h-[140px] items-center">
+                            <!-- Generated Blocks -->
+                        </div>
+                    </div>
+                    <!-- Ones Units Column -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 flex flex-col items-center">
+                        <span class="text-xs font-bold font-mono text-emerald-300 uppercase mb-3">Ones Cubes (1)</span>
+                        <div id="blocks-ones" class="flex flex-wrap gap-2 justify-center min-h-[140px] items-center">
+                            <!-- Generated Blocks -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Explanation Banner -->
+                <div id="base10-status-text" class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-4 rounded-2xl text-center font-medium text-sm sm:text-base">
+                    Click "Animate Sharing Blocks" to see how the blocks group into equal sets of the divisor!
+                </div>
+            </div>
+        </section>
+        <section id="tab-practice" class="hidden space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-3xl shadow-xl border-2 border-slate-200">
+                <div class="flex flex-wrap justify-between items-center border-b pb-4 mb-6">
+                    <div>
+                        <span class="bg-amber-100 text-amber-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase">Practice Challenge</span>
+                        <h2 class="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">Test Your Mastery!</h2>
+                    </div>
+                    <div class="flex items-center gap-3 mt-2 sm:mt-0">
+                        <div class="bg-indigo-50 px-4 py-2 rounded-2xl text-indigo-700 font-bold text-sm border border-indigo-200">
+                            <i class="fa-solid fa-star text-amber-500 mr-1"></i> Score: <span id="prac-score">0</span>
+                        </div>
+                        <div class="bg-emerald-50 px-4 py-2 rounded-2xl text-emerald-700 font-bold text-sm border border-emerald-200">
+                            <i class="fa-solid fa-fire text-orange-500 mr-1"></i> Streak: <span id="prac-streak">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Problem Card -->
+                <div class="max-w-xl mx-auto bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl relative">
+                    <div class="text-center mb-6">
+                        <span class="bg-indigo-800 text-indigo-200 text-xs font-bold px-3 py-1 rounded-full uppercase">Division Question</span>
+                        <div class="font-mono text-4xl sm:text-5xl font-extrabold tracking-wider text-amber-300 mt-3">
+                            <span id="prac-dividend">525</span> <span class="text-white">÷</span> <span id="prac-divisor">25</span>
+                        </div>
+                    </div>
+                    <!-- Mini Building Block Multiples Hint -->
+                    <div class="bg-slate-800/80 p-4 rounded-2xl mb-6 border border-slate-700">
+                        <span class="text-xs text-slate-400 font-bold uppercase block text-center mb-2">Helper Multiples:</span>
+                        <div id="prac-multiples-hint" class="flex flex-wrap gap-2 justify-center text-xs font-mono text-cyan-300">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <!-- Input Form -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Quotient (Answer)</label>
+                                <input type="number" id="prac-input-q" placeholder="e.g. 21" class="w-full bg-slate-800 border-2 border-slate-700 rounded-2xl px-4 py-3 text-white font-mono text-xl focus:outline-none focus:border-indigo-500 text-center font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Remainder</label>
+                                <input type="number" id="prac-input-r" placeholder="e.g. 0" class="w-full bg-slate-800 border-2 border-slate-700 rounded-2xl px-4 py-3 text-white font-mono text-xl focus:outline-none focus:border-indigo-500 text-center font-bold">
+                            </div>
+                        </div>
+                        <button onclick="checkPracticeAnswer()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-heading font-bold py-4 rounded-2xl shadow-lg transition text-lg flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-check"></i> Check Answer
+                        </button>
+                    </div>
+                    <div id="prac-feedback" class="mt-6 text-center text-base font-bold min-h-[30px] hidden"></div>
+                </div>
+                <div id="prac-next-container" class="text-center mt-6 hidden">
+                    <button onclick="generatePracticeProblem()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-heading font-bold px-8 py-3.5 rounded-2xl shadow-lg transition text-lg">
+                        Next Problem <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        // --- Global Sound System (Web Audio API) ---
+        let soundEnabled = true;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+        function playSound(type) {
+            if(!soundEnabled) return;
+            try {
+                if(!audioCtx) audioCtx = new AudioCtx();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                if(type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if(type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if(type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch(e){}
+        }
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            document.getElementById('sound-label').innerText = soundEnabled ? 'Sound ON' : 'Sound OFF';
+            if(soundEnabled) playSound('click');
+        }
+        // Tab Switcher
+        function switchTab(tabId) {
+            playSound('click');
+            ['guided', 'base10', 'practice'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`tab-btn-${t}`).className = "flex-1 sm:flex-initial px-5 py-3 rounded-xl font-heading font-bold text-base transition flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200";
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-btn-${tabId}`).className = "flex-1 sm:flex-initial px-5 py-3 rounded-xl font-heading font-bold text-base transition flex items-center justify-center gap-2 bg-indigo-600 text-white shadow-md";
+            if(tabId === 'base10') renderBase10Blocks();
+            if(tabId === 'practice' && !currentPractice) generatePracticeProblem();
+        }
+        let problem = {
+            dividend: 782,
+            divisor: 34,
+            dDigits: [7, 8, 2],
+            qTens: 2,
+            qOnes: 3,
+            sub1: 68,
+            rem1: 10,
+            brought1: 102,
+            sub2: 102,
+            rem2: 0,
+            step: 1 // Steps 1 to 6
+        };
+        function loadPreset(dvd, dvs) {
+            playSound('click');
+            document.getElementById('custom-dividend').value = dvd;
+            document.getElementById('custom-divisor').value = dvs;
+            initProblem(dvd, dvs);
+        }
+        function startCustomProblem() {
+            playSound('click');
+            const dvd = parseInt(document.getElementById('custom-dividend').value) || 782;
+            const dvs = parseInt(document.getElementById('custom-divisor').value) || 34;
+            initProblem(dvd, dvs);
+        }
+        function initProblem(dvd, dvs) {
+            const qTens = Math.floor((dvd / dvs) / 10) || Math.floor(dvd / dvs);
+            const qOnes = Math.floor(dvd / dvs) % 10;
+            const is3Digit = dvd >= 100;
+            // First working number
+            const firstPart = is3Digit ? parseInt(String(dvd).substring(0, 2)) : dvd;
+            const q1 = Math.floor(firstPart / dvs);
+            const sub1 = q1 * dvs;
+            const rem1 = firstPart - sub1;
+            const broughtDigit = is3Digit ? parseInt(String(dvd).charAt(2)) : 0;
+            const brought1 = rem1 * 10 + broughtDigit;
+            const q2 = Math.floor(brought1 / dvs);
+            const sub2 = q2 * dvs;
+            const rem2 = brought1 - sub2;
+            problem = {
+                dividend: dvd,
+                divisor: dvs,
+                dDigits: String(dvd).split('').map(Number),
+                qTens: q1,
+                qOnes: q2,
+                sub1: sub1,
+                rem1: rem1,
+                brought1: brought1,
+                sub2: sub2,
+                rem2: rem2,
+                step: 1
+            };
+            renderBuildingBlocksTower();
+            renderHouseState();
+            renderStepPrompt();
+        }
+        function renderBuildingBlocksTower() {
+            document.getElementById('ladder-divisor-display').innerText = problem.divisor;
+            const tower = document.getElementById('skip-counting-tower');
+            let html = '';
+            for(let i = 1; i <= 9; i++) {
+                const prod = problem.divisor * i;
+                html += `
+                    <div id="ladder-item-${i}" class="bg-slate-50 border-2 border-slate-200 p-2.5 rounded-xl flex items-center justify-between transition transform hover:scale-[1.02]">
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 font-mono font-bold text-xs flex items-center justify-center">${i}</span>
+                            <span class="font-mono text-sm font-bold text-slate-700">${problem.divisor} × ${i}</span>
+                        </div>
+                        <span class="font-mono text-base font-black text-indigo-600">= ${prod}</span>
+                    </div>
+                `;
+            }
+            tower.innerHTML = html;
+        }
+        function highlightLadderItem(num) {
+            for(let i = 1; i <= 9; i++) {
+                const el = document.getElementById(`ladder-item-${i}`);
+                if(el) {
+                    if(i === num) {
+                        el.className = "bg-amber-100 border-2 border-amber-400 p-2.5 rounded-xl flex items-center justify-between transition transform scale-[1.03] shadow-md";
+                    } else {
+                        el.className = "bg-slate-50 border-2 border-slate-200 p-2.5 rounded-xl flex items-center justify-between transition transform hover:scale-[1.02] opacity-75";
+                    }
+                }
+            }
+        }
+        function updateDMSBHighlight(stepLetter) {
+            ['d', 'm', 's', 'b'].forEach(l => {
+                const card = document.getElementById(`dmsb-${l}`);
+                if(l === stepLetter) {
+                    card.classList.add('ring-4', 'ring-indigo-500', 'bg-indigo-50');
+                } else {
+                    card.classList.remove('ring-4', 'ring-indigo-500', 'bg-indigo-50');
+                }
+            });
+        }
+        function renderHouseState() {
+            const hDivisor = document.getElementById('house-divisor');
+            const hDividend = document.getElementById('house-dividend');
+            const hQuotient = document.getElementById('house-quotient');
+            const hSteps = document.getElementById('house-steps-container');
+            hDivisor.innerText = problem.divisor;
+            
+            // Render Dividend digits in fixed-width slots
+            let divHtml = '';
+            problem.dDigits.forEach(d => {
+                divHtml += `<span class="inline-block w-9 sm:w-12 text-center">${d}</span>`;
+            });
+            hDividend.innerHTML = divHtml;
+
+            // Render Quotient digits aligned over tens and ones columns
+            let qStr = '';
+            qStr += `<span class="inline-block w-9 sm:w-12 text-center text-purple-600">${problem.step >= 2 ? problem.qTens : '_'}</span>`;
+            qStr += `<span class="inline-block w-9 sm:w-12 text-center text-amber-500">${problem.step >= 5 ? problem.qOnes : '_'}</span>`;
+            hQuotient.innerHTML = qStr;
+
+            // Render Subtraction Steps underneath with exact column alignments
+            let stepsHtml = '';
+            if(problem.step >= 2) {
+                stepsHtml += `
+                    <div class="text-rose-500 flex border-b-2 border-slate-800 pb-1">
+                        <span class="inline-block w-4 text-center">-</span>
+                        <span class="inline-block w-14 sm:w-20 text-right">${problem.sub1}</span>
+                    </div>
+                `;
+            }
+            if(problem.step >= 3) {
+                stepsHtml += `
+                    <div class="text-purple-700 flex pt-1">
+                        <span class="inline-block w-9 sm:w-12 text-center">${problem.rem1}</span>
+                    </div>
+                `;
+            }
+            if(problem.step >= 4) {
+                stepsHtml += `
+                    <div class="text-emerald-600 flex items-center gap-1 pt-1">
+                        <span class="inline-block w-9 sm:w-12 text-center">${problem.brought1}</span>
+                        <i class="fa-solid fa-arrow-down bounce-arrow text-emerald-500 text-sm"></i>
+                    </div>
+                `;
+            }
+            if(problem.step >= 5) {
+                stepsHtml += `
+                    <div class="text-rose-500 flex border-b-2 border-slate-800 pb-1 mt-1">
+                        <span class="inline-block w-9 sm:w-12 text-center"></span>
+                        <span class="inline-block w-4 text-center">-</span>
+                        <span class="inline-block w-9 sm:w-12 text-right">${problem.sub2}</span>
+                    </div>
+                `;
+            }
+            if(problem.step >= 6) {
+                stepsHtml += `
+                    <div class="font-extrabold text-emerald-600 flex pt-1">
+                        <span class="inline-block w-9 sm:w-12 text-center"></span>
+                        <span class="inline-block w-9 sm:w-12 text-center">${problem.rem2}</span>
+                    </div>
+                `;
+            }
+            hSteps.innerHTML = stepsHtml;
+        }
+        function renderStepPrompt() {
+            const icon = document.getElementById('prompt-step-icon');
+            const title = document.getElementById('prompt-step-title');
+            const desc = document.getElementById('prompt-step-desc');
+            const inputArea = document.getElementById('prompt-input-area');
+            const feedback = document.getElementById('prompt-feedback');
+            feedback.innerHTML = '';
+            const workingPart1 = parseInt(String(problem.dividend).substring(0, 2));
+            if(problem.step === 1) {
+                updateDMSBHighlight('d');
+                highlightLadderItem(problem.qTens);
+                icon.innerHTML = '<i class="fa-solid fa-divide"></i>';
+                title.innerText = `Step 1: DIVIDE (${workingPart1} ÷ ${problem.divisor})`;
+                desc.innerHTML = `How many times does <span class="font-bold text-amber-300">${problem.divisor}</span> fit into <span class="font-bold text-amber-300">${workingPart1}</span> without going over? (Check the yellow highlighted box on the left!)`;
+                inputArea.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-bold text-indigo-200">First Quotient Digit:</label>
+                        <input type="number" id="input-step-1" class="w-20 px-3 py-2 rounded-xl text-slate-900 font-mono font-bold text-xl text-center focus:outline-none" placeholder="?">
+                    </div>
+                    <button onclick="checkStep1()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Submit Digit</button>
+                `;
+            } else if(problem.step === 2) {
+                updateDMSBHighlight('m');
+                icon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                title.innerText = `Step 2: MULTIPLY & SUBTRACT`;
+                desc.innerHTML = `Multiply <span class="font-bold text-amber-300">${problem.qTens} × ${problem.divisor}</span> = <span class="font-bold text-white">${problem.sub1}</span>. What is <span class="font-bold text-amber-300">${workingPart1} - ${problem.sub1}</span>?`;
+                inputArea.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-bold text-indigo-200">${workingPart1} - ${problem.sub1} =</label>
+                        <input type="number" id="input-step-2" class="w-20 px-3 py-2 rounded-xl text-slate-900 font-mono font-bold text-xl text-center focus:outline-none" placeholder="?">
+                    </div>
+                    <button onclick="checkStep2()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Submit Remainder</button>
+                `;
+            } else if(problem.step === 3) {
+                updateDMSBHighlight('b');
+                icon.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+                title.innerText = `Step 3: BRING DOWN NEXT DIGIT`;
+                const broughtDigit = problem.dDigits[2];
+                desc.innerHTML = `Bring down the ones digit <span class="font-bold text-amber-300">${broughtDigit}</span> to make <span class="font-bold text-emerald-300">${problem.brought1}</span>! Click continue when ready.`;
+                inputArea.innerHTML = `
+                    <div></div>
+                    <button onclick="advanceStep3()" class="bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Bring Down Digit <i class="fa-solid fa-arrow-down ml-1"></i></button>
+                `;
+            } else if(problem.step === 4) {
+                updateDMSBHighlight('d');
+                highlightLadderItem(problem.qOnes);
+                icon.innerHTML = '<i class="fa-solid fa-divide"></i>';
+                title.innerText = `Step 4: DIVIDE AGAIN (${problem.brought1} ÷ ${problem.divisor})`;
+                desc.innerHTML = `How many times does <span class="font-bold text-amber-300">${problem.divisor}</span> fit into <span class="font-bold text-amber-300">${problem.brought1}</span>? Look at the highlighted Building Block!`;
+                inputArea.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-bold text-indigo-200">Second Quotient Digit:</label>
+                        <input type="number" id="input-step-4" class="w-20 px-3 py-2 rounded-xl text-slate-900 font-mono font-bold text-xl text-center focus:outline-none" placeholder="?">
+                    </div>
+                    <button onclick="checkStep4()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Submit Digit</button>
+                `;
+            } else if(problem.step === 5) {
+                updateDMSBHighlight('s');
+                icon.innerHTML = '<i class="fa-solid fa-minus"></i>';
+                title.innerText = `Step 5: FINAL SUBTRACTION`;
+                desc.innerHTML = `Multiply <span class="font-bold text-amber-300">${problem.qOnes} × ${problem.divisor} = ${problem.sub2}</span>. Subtract <span class="font-bold text-amber-300">${problem.brought1} - ${problem.sub2}</span>.`;
+                inputArea.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-bold text-indigo-200">Final Remainder:</label>
+                        <input type="number" id="input-step-5" class="w-20 px-3 py-2 rounded-xl text-slate-900 font-mono font-bold text-xl text-center focus:outline-none" placeholder="?">
+                    </div>
+                    <button onclick="checkStep5()" class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Finish Problem</button>
+                `;
+            } else if(problem.step === 6) {
+                updateDMSBHighlight('');
+                icon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+                title.innerText = `Problem Solved Perfectly! 🎉`;
+                desc.innerHTML = `<span class="font-bold text-amber-300">${problem.dividend} ÷ ${problem.divisor} = ${Math.floor(problem.dividend / problem.divisor)}</span> ${problem.rem2 > 0 ? 'R' + problem.rem2 : 'with no remainder!'}`;
+                inputArea.innerHTML = `
+                    <div></div>
+                    <button onclick="loadPreset(625, 25)" class="bg-emerald-400 hover:bg-emerald-300 text-slate-900 font-heading font-bold px-6 py-2.5 rounded-xl shadow-lg transition">Try Next Problem <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                `;
+                playSound('success');
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+        }
+        // Verification Functions
+        function checkStep1() {
+            const val = parseInt(document.getElementById('input-step-1').value);
+            const fb = document.getElementById('prompt-feedback');
+            if(val === problem.qTens) {
+                playSound('success');
+                fb.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Correct! ${problem.divisor} fits ${val} times!</span>`;
+                problem.step = 2;
+                renderHouseState();
+                setTimeout(renderStepPrompt, 800);
+            } else {
+                playSound('error');
+                fb.innerHTML = `<span class="text-rose-300"><i class="fa-solid fa-circle-xmark mr-1"></i> Check the yellow card on the left Building Blocks ladder!</span>`;
+            }
+        }
+        function checkStep2() {
+            const val = parseInt(document.getElementById('input-step-2').value);
+            const fb = document.getElementById('prompt-feedback');
+            if(val === problem.rem1) {
+                playSound('success');
+                fb.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Great subtraction! Remainder is ${val}.</span>`;
+                problem.step = 3;
+                renderHouseState();
+                setTimeout(renderStepPrompt, 800);
+            } else {
+                playSound('error');
+                fb.innerHTML = `<span class="text-rose-300"><i class="fa-solid fa-circle-xmark mr-1"></i> Try subtracting ${parseInt(String(problem.dividend).substring(0, 2))} - ${problem.sub1} again.</span>`;
+            }
+        }
+        function advanceStep3() {
+            playSound('click');
+            problem.step = 4;
+            renderHouseState();
+            renderStepPrompt();
+        }
+        function checkStep4() {
+            const val = parseInt(document.getElementById('input-step-4').value);
+            const fb = document.getElementById('prompt-feedback');
+            if(val === problem.qOnes) {
+                playSound('success');
+                fb.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i> Spot on! ${val} is the second digit!</span>`;
+                problem.step = 5;
+                renderHouseState();
+                setTimeout(renderStepPrompt, 800);
+            } else {
+                playSound('error');
+                fb.innerHTML = `<span class="text-rose-300"><i class="fa-solid fa-circle-xmark mr-1"></i> Look at the left ladder for ${problem.brought1}!</span>`;
+            }
+        }
+        function checkStep5() {
+            const val = parseInt(document.getElementById('input-step-5').value);
+            const fb = document.getElementById('prompt-feedback');
+            if(val === problem.rem2) {
+                playSound('success');
+                problem.step = 6;
+                renderHouseState();
+                renderStepPrompt();
+            } else {
+                playSound('error');
+                fb.innerHTML = `<span class="text-rose-300"><i class="fa-solid fa-circle-xmark mr-1"></i> Almost! ${problem.brought1} - ${problem.sub2} = ${problem.rem2}</span>`;
+            }
+        }
+        function renderBase10Blocks() {
+            document.getElementById('base10-problem-label').innerText = `${problem.dividend} ÷ ${problem.divisor}`;
+            
+            const hDiv = document.getElementById('blocks-hundreds');
+            const tDiv = document.getElementById('blocks-tens');
+            const oDiv = document.getElementById('blocks-ones');
+            const hCount = Math.floor(problem.dividend / 100);
+            const tCount = Math.floor((problem.dividend % 100) / 10);
+            const oCount = problem.dividend % 10;
+            let hHtml = '';
+            for(let i = 0; i < hCount; i++) {
+                hHtml += `<div class="w-16 h-16 bg-indigo-500 border-2 border-indigo-300 rounded-lg flex items-center justify-center font-bold text-xs text-white shadow">100</div>`;
+            }
+            let tHtml = '';
+            for(let i = 0; i < tCount; i++) {
+                tHtml += `<div class="w-5 h-16 bg-amber-500 border border-amber-300 rounded flex flex-col justify-between py-1 items-center font-bold text-[9px] text-slate-900 shadow">10</div>`;
+            }
+            let oHtml = '';
+            for(let i = 0; i < oCount; i++) {
+                oHtml += `<div class="w-5 h-5 bg-emerald-500 border border-emerald-300 rounded flex items-center justify-center font-bold text-[8px] text-white shadow">1</div>`;
+            }
+            hDiv.innerHTML = hHtml || '<span class="text-xs text-slate-500">None</span>';
+            tDiv.innerHTML = tHtml || '<span class="text-xs text-slate-500">None</span>';
+            oDiv.innerHTML = oHtml || '<span class="text-xs text-slate-500">None</span>';
+        }
+        function animateBase10Grouping() {
+            playSound('click');
+            const status = document.getElementById('base10-status-text');
+            const quotient = Math.floor(problem.dividend / problem.divisor);
+            status.innerHTML = `<span class="font-bold text-indigo-700"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Grouping ${problem.dividend} blocks into equal sets of ${problem.divisor}...</span>`;
+            setTimeout(() => {
+                playSound('success');
+                status.innerHTML = `<span class="font-bold text-emerald-700"><i class="fa-solid fa-circle-check mr-2"></i> Done! You can form exactly ${quotient} groups of ${problem.divisor}!</span>`;
+            }, 1200);
+        }
+        let pracScore = 0;
+        let pracStreak = 0;
+        let currentPractice = null;
+        function generatePracticeProblem() {
+            playSound('click');
+            const divisors = [12, 15, 20, 25, 30, 32, 34, 35, 40, 50];
+            const dvs = divisors[Math.floor(Math.random() * divisors.length)];
+            const q = Math.floor(Math.random() * 15) + 12; // 12 to 26
+            const dvd = dvs * q;
+            currentPractice = { dividend: dvd, divisor: dvs, quotient: q, remainder: 0 };
+            document.getElementById('prac-dividend').innerText = dvd;
+            document.getElementById('prac-divisor').innerText = dvs;
+            document.getElementById('prac-input-q').value = '';
+            document.getElementById('prac-input-r').value = '';
+            document.getElementById('prac-feedback').classList.add('hidden');
+            document.getElementById('prac-next-container').classList.add('hidden');
+            // Practice multiples hints
+            let hintsHtml = '';
+            for(let i = 1; i <= 5; i++) {
+                hintsHtml += `<span class="bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">${dvs}×${i}=${dvs*i}</span>`;
+            }
+            document.getElementById('prac-multiples-hint').innerHTML = hintsHtml;
+        }
+        function checkPracticeAnswer() {
+            const userQ = parseInt(document.getElementById('prac-input-q').value);
+            const userR = parseInt(document.getElementById('prac-input-r').value || 0);
+            const fb = document.getElementById('prac-feedback');
+            fb.classList.remove('hidden');
+            if(isNaN(userQ)) {
+                fb.innerHTML = `<span class="text-amber-400">Please enter your quotient answer!</span>`;
+                return;
+            }
+            if(userQ === currentPractice.quotient && userR === currentPractice.remainder) {
+                playSound('success');
+                pracScore += 10;
+                pracStreak += 1;
+                document.getElementById('prac-score').innerText = pracScore;
+                document.getElementById('prac-streak').innerText = pracStreak;
+                fb.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-2"></i> Outstanding! Correct Answer! 🎉</span>`;
+                document.getElementById('prac-next-container').classList.remove('hidden');
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+            } else {
+                playSound('error');
+                pracStreak = 0;
+                document.getElementById('prac-streak').innerText = pracStreak;
+                fb.innerHTML = `<span class="text-rose-400"><i class="fa-solid fa-circle-xmark mr-2"></i> Not quite. Use the multiples hint above and try again!</span>`;
+            }
+        }
+        // Initialize App on window load
+        window.onload = function() {
+            initProblem(782, 34);
+        };
+    </script>
+</body>
+</html>
